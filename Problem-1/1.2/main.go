@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"regexp"
-	"strconv"
+	"strings"
 )
 
-var wordToDigit = map[string]int{
+var NumberMap = map[string]int{
+	"zero":  0,
 	"one":   1,
 	"two":   2,
 	"three": 3,
@@ -22,46 +22,52 @@ var wordToDigit = map[string]int{
 
 func main() {
 
+	var ans int = 0
 	content, _ := os.Open("input")
 	defer content.Close()
 
 	scanner := bufio.NewScanner(content)
-	for scanner.Scan() {
-		fmt.Printf("line: %s\n", scanner.Text())
-		line := scanner.Text()
-		sum = findFirstNLastDigit(line)
-	}
-	fmt.Println(sum)
 
+	for scanner.Scan() {
+		var line string = scanner.Text()
+		// fmt.Println(line)
+		ans += summer(line)
+	}
+	fmt.Println(ans)
 }
 
-var sum int
+func summer(line string) int {
+	// summer wind
+	var sum int = 0
+	var firstNum int
+	var lastNum int
+	var isSet bool = false
 
-func findFirstNLastDigit(inLine string) int {
-	re := regexp.MustCompile(`\d|one|two|three|four|five|six|seven|eight|nine`)
-	matches := re.FindAllString(inLine, -1)
-	fmt.Println(matches)
+	for i := 0; i < len(line); i++ {
+		if line[i] >= '0' && line[i] <= '9' {
+			var num int = int(line[i] - '0')
+			// fmt.Printf("%d", num)
+			if isSet == false {
+				firstNum = num
+				isSet = true
+			}
+			lastNum = num
 
-	var numericValues []string
-	for _, match := range matches {
-		numericValue := match
+		} else {
+			for word, num := range NumberMap {
+				if wordCheck(line, i, word) {
+					firstNum = num
+					isSet = true
+				}
+				lastNum = num
 
-		if val, ok := wordToDigit[match]; ok {
-			numericValue = strconv.Itoa(val)
+			}
 		}
-
-		numericValues = append(numericValues, numericValue)
-	}
-
-	fmt.Println(numericValues)
-
-	if len(numericValues) > 0 {
-		first := numericValues[0]
-		last := numericValues[len(numericValues)-1]
-		result := first + last
-		fmt.Println(result)
-		resultint, _ := strconv.Atoi(result)
-		sum += resultint
+		sum += (firstNum * 10) + lastNum
 	}
 	return sum
+}
+
+func wordCheck(lineString string, index int, word string) bool {
+	return strings.HasPrefix(lineString[index:], word)
 }
